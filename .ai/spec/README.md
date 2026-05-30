@@ -1,6 +1,6 @@
-# Lightspeed Agentic Sandbox — Specifications
+# OpenShift Lightspeed Agentic Console Plugin — Specifications
 
-These specs define the behavioral rules and codebase navigation for the lightspeed-agentic-sandbox, a multi-provider agent runtime that runs inside ephemeral Kubernetes pods for OpenShift Lightspeed.
+An OpenShift Console dynamic plugin that provides the "AI Hub" UI for managing AI-driven cluster operation proposals. Users view, approve/deny, and monitor proposals through a multi-stage workflow (Analysis, Execution, Verification, Escalation), configure approval policies, manage LLM providers, and create agent tiers.
 
 ## Structure
 
@@ -9,28 +9,9 @@ These specs define the behavioral rules and codebase navigation for the lightspe
 | **what/** | `.ai/spec/what/` | Behavioral rules. What the system must do. Implementation-agnostic. |
 | **how/** | `.ai/spec/how/` | Codebase navigation. How the code is organized. Implementation-specific. |
 
-### what/ — Behavioral Specifications
-
-| Spec | Description |
-|------|-------------|
-| [system-overview.md](what/system-overview.md) | System role, component inventory, lifecycle, integration boundaries |
-| [run-api.md](what/run-api.md) | POST /run endpoint: request/response shapes, context prefix, timeouts, error handling |
-| [provider-contract.md](what/provider-contract.md) | AgentProvider ABC, event model, structured output, thin-adapter principle, skills delegation |
-| [configuration.md](what/configuration.md) | Environment variables, provider selection, model resolution, container layout, build system |
-| [health-probes.md](what/health-probes.md) | Liveness (`/health`) and readiness (`/ready`) endpoints, failure mode audit, probe configuration |
-| [audit-logging.md](what/audit-logging.md) | OTel GenAI semantic conventions, span events for LLM calls and tool execution, compliance audit trail |
-| [e2e-testing.md](what/e2e-testing.md) | Container BDD harness: run modes, live vs unit split, OLS-3220 spike findings |
-
-### how/ — Architecture Specifications
-
-| Spec | Description |
-|------|-------------|
-| [project-structure.md](how/project-structure.md) | Entry points, naming conventions, dependency extras (package tree in AGENTS.md) |
-| [provider-architecture.md](how/provider-architecture.md) | Data flow, abstractions, SDK integration points, implementation notes |
-
 ## Scope
 
-These specs cover the **lightspeed-agentic-sandbox** Python agent runtime only. The operator (which calls this runtime), console plugin, and skills packaging are separate projects with their own specs.
+Covers the console plugin only — the React frontend that renders proposal state and sends approval/denial patches. Out of scope: the lightspeed-agentic-operator (which reconciles proposals), the agentic-sandbox (which executes agent workloads), CRD definitions, and backend API logic.
 
 ## Audience
 
@@ -41,36 +22,26 @@ AI agents. Content is optimized for precision and machine consumption.
 | Task | Start here |
 |---|---|
 | Understand the system | `what/system-overview.md` |
-| Understand the /run API | `what/run-api.md` |
-| Add or modify a provider | `what/provider-contract.md` + `how/provider-architecture.md` |
-| Understand env vars and deployment | `what/configuration.md` |
+| Understand proposals UI | `what/proposal-lifecycle.md` |
+| Understand configuration UI | `what/configuration.md` |
+| Understand dynamic rendering | `what/dynamic-components.md` |
 | Navigate the codebase | `how/project-structure.md` |
-| Understand health probes | `what/health-probes.md` |
-| Understand audit logging | `what/audit-logging.md` |
-| Understand E2E testing | `what/e2e-testing.md` |
+| Understand K8s data flow | `how/k8s-data-layer.md` |
+| Understand the plugin system | `how/console-plugin-system.md` |
 
 ## Cross-Reference
 
 | what/ | how/ |
 |---|---|
-| `what/system-overview.md` | `how/project-structure.md` |
-| `what/run-api.md` | `how/provider-architecture.md` (data flow section) |
-| `what/provider-contract.md` | `how/provider-architecture.md` |
-| `what/configuration.md` | `how/provider-architecture.md` (container build, implementation notes) |
-| `what/health-probes.md` | `how/project-structure.md` (health.py entry) |
-| `what/audit-logging.md` | `how/provider-architecture.md` (observability integration) |
+| `what/system-overview.md` | `how/project-structure.md`, `how/console-plugin-system.md` |
+| `what/proposal-lifecycle.md` | `how/k8s-data-layer.md`, `how/project-structure.md` |
+| `what/configuration.md` | `how/k8s-data-layer.md` |
+| `what/dynamic-components.md` | `how/project-structure.md` |
 
 ## Conventions
 
 - **Rule numbering:** behavioral rules are numbered sequentially within each what/ file.
-- **Planned changes:** unimplemented behavior is marked with `[PLANNED]` or `[PLANNED: OLS-XXXX]` inline next to the rule it affects.
-- **Environment variables:** reference the actual env var (e.g., `LIGHTSPEED_PROVIDER`).
+- **Planned changes:** unimplemented behavior is marked with `[PLANNED]` or `[PLANNED: TICKET-XXXX]` inline next to the rule it affects.
 - **Constraints:** component-specific and cross-cutting constraints go in the relevant what/ file's Constraints section, co-located with behavioral rules. Development conventions go in CLAUDE.md.
 - **Authority:** what/ specs are authoritative for behavior. how/ specs are authoritative for implementation. When they conflict, what/ wins.
 - **When to create a new file vs. extend an existing one:** if the new concern has its own lifecycle, configuration surface, and can be understood independently, it gets its own file. If it's a capability added to an existing component, it goes in that component's file.
-
-## Project Context
-
-This is the agent runtime that runs inside ephemeral sandbox pods. The operator sends requests to `POST /v1/agent/run` and receives structured JSON responses. The runtime wraps multiple LLM provider SDKs (DeepAgents, Gemini, OpenAI) behind a single interface.
-
-Jira tracking: Feature OCPSTRAT-3095, Epic OLS-2894.

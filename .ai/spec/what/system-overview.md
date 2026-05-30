@@ -1,59 +1,46 @@
 # System Overview
 
-The lightspeed-agentic-sandbox is a multi-provider agent runtime that runs inside ephemeral Kubernetes pods. It exposes a single HTTP endpoint (`POST /v1/agent/run`) consumed by the OpenShift Lightspeed operator. The runtime wraps DeepAgents (for Anthropic/Claude models), Gemini, and OpenAI LLM provider SDKs behind a unified provider abstraction and returns structured JSON responses.
+The OpenShift Lightspeed Agentic Console Plugin is a dynamic plugin that loads into the OpenShift Console at runtime via webpack module federation. It provides the "AI Hub" — a UI for cluster administrators to view, approve, and monitor AI-driven proposals that diagnose and remediate cluster issues. The plugin is read-only with respect to cluster workloads; it only reads Proposal CRs and patches ProposalApproval CRs to express human decisions.
 
 ## Behavioral Rules
 
 ### System Role
 
-1. The sandbox is a stateless, one-shot worker. Each pod processes a single agent query and is disposable. No session state persists between requests.
+1. The plugin MUST load into OpenShift Console via the ConsolePlugin CRD and webpack module federation. It does not run standalone.
+2. The plugin MUST register three routes: `/lightspeed/proposals` (list), `/lightspeed/proposals/:ns/:name` (detail), and `/lightspeed/configuration` (settings).
+3. The plugin MUST add a navigation item labeled "AI Hub" under the Administration section of the admin perspective.
+4. All user-facing strings MUST use the `plugin__lightspeed-agentic-console-plugin` i18n namespace.
+5. All CSS classes MUST be prefixed with `ols-plugin__` to avoid style conflicts with the host console.
 
-2. The operator is the sole consumer of the sandbox HTTP API. The sandbox does not interpret workflow semantics (phases, retries, step ordering) — that logic belongs to the operator.
+### API Contract
 
-3. The sandbox delegates all tool execution, command invocation, and skill discovery to the underlying provider SDK. It does not implement custom tool executors.
+6. All custom resources use API group `agentic.openshift.io` version `v1alpha1`.
+7. The plugin communicates with the cluster exclusively through the OpenShift Console SDK's `useK8sWatchResource` (reads) and `k8sPatch`/`k8sCreate`/`k8sDelete` (writes).
+8. The plugin proxies API requests to the lightspeed backend through `/api/proxy/plugin/lightspeed-agentic-console-plugin/ols`.
+9. Pod logs are streamed via the Kubernetes API at `/api/kubernetes/api/v1/namespaces/{ns}/pods/{pod}/log` using `consoleFetch`.
 
-### Component Inventory
+### CRD Inventory
 
-4. The system has these major components: HTTP API layer (routes, models), provider abstraction (factory, query options, event model), provider adapters (DeepAgents, Gemini, OpenAI), configuration mapping (`config.py`), MCP resolution (`mcp.py`), health probes, and observability (`audit.py`, `metrics.py`, `tracing.py`).
-
-5. Component behavioral rules: `run-api.md`, `provider-contract.md`, `configuration.md`, `health-probes.md`, `audit-logging.md`, `e2e-testing.md`.
-
-### Lifecycle
-
-6. At startup, the process runs `resolve_sdk()` / reasoning config parse, constructs a provider via the factory, builds the API router, registers health and metrics routes, initializes tracing in the app lifespan, and serves on port 8080.
-
-7. The provider is selected once at startup via `LIGHTSPEED_PROVIDER` and cannot change during the process lifetime.
-
-8. Model resolution uses canonical `LIGHTSPEED_MODEL` (mapped to SDK-specific model env vars), with package default fallback.
-
-### Integration Boundaries
-
-9. **Operator -> Sandbox:** HTTP POST with `RunRequest` JSON. The operator carries step semantics via `query`, `outputSchema`, and `context`. The sandbox returns `RunResponse` JSON.
-
-10. **Sandbox -> Provider SDK:** The sandbox passes `ProviderQueryOptions` into the selected adapter and consumes an async event stream until a terminal `result` event.
-
-11. **Provider SDK -> External:** Each SDK manages its own API authentication, tool execution, and skill discovery. The sandbox supplies credentials via environment variables but does not mediate API calls.
+10. The plugin operates on these CRDs: Proposal (namespaced), ProposalApproval (namespaced), Agent (cluster-scoped), LLMProvider (cluster-scoped), ApprovalPolicy (cluster-scoped), AnalysisResult (namespaced), ExecutionResult (namespaced), VerificationResult (namespaced), EscalationResult (namespaced).
+11. Result CRs (AnalysisResult, ExecutionResult, VerificationResult, EscalationResult) are discovered via label selector `agentic.openshift.io/proposal: <proposal-name>` and correlated to their parent Proposal via `status.steps.<stage>.results[]` references.
 
 ## Configuration Surface
 
 | Field/Flag | Type | Default | Description |
 |---|---|---|---|
-| `LIGHTSPEED_PROVIDER` | string | `anthropic` | Selects the provider backend (resolves to `deepagents`, `gemini`, or `openai` SDK) |
-| `LIGHTSPEED_SKILLS_DIR` | string | `/app/skills` | Skill root and provider working directory |
-| `LIGHTSPEED_MODEL` | string | `claude-opus-4-6` | Canonical model identifier (mapped to SDK-specific env vars per provider) |
-
-See `configuration.md` for the full environment variable reference.
+| `consolePlugin.name` | string | `lightspeed-agentic-console-plugin` | Plugin name registered with console |
+| `plugin.image` | Helm value | — | Container image location for deployment |
 
 ## Constraints
 
-- The sandbox is not a general-purpose API server. It serves one operator, one endpoint, one provider per pod.
-- Provider SDK packages are optional Python extras. Only the selected provider's SDK needs to be installed, though the container image ships all three.
-- The sandbox must remain deployable without network access during build (Konflux hermetic builds).
+- React 17 (matches console's React version) — do not upgrade to React 18.
+- PatternFly 6 — use PF components and CSS variables exclusively. No hex colors.
+- No naked element selectors or `.pf-`/`.co-` prefixed classes in CSS.
+- TypeScript strict mode is off (`strict: false`) but `noUnusedLocals` is enforced.
+- `exposedModules` in package.json MUST match `$codeRef` values in console-extensions.json exactly.
 
 ## Planned Changes
 
 | Ticket | Summary |
 |---|---|
-| OLS-2914 | Register deprecated route aliases (`/analyze`, `/execute`, `/verify`) or remove from product docs |
-| OLS-3033 | Align operator-passed `allowedTools` and `llm` with provider options |
-| OLS-3038–OLS-3043 | TLS, mTLS, and network policies for operator-to-sandbox traffic |
+| — | Auto-generate CRD types from OpenAPI schema (noted as TODO in `src/models/proposal.ts`) |

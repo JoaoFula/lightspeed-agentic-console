@@ -1,156 +1,115 @@
 # Architecture
 
-The lightspeed-agentic-sandbox is a multi-provider agent runtime for OpenShift Lightspeed. It runs as a FastAPI application inside ephemeral Kubernetes pods, accepting structured queries from the Lightspeed operator and delegating execution to one of three LLM provider SDKs.
+The OpenShift Lightspeed Agentic Console Plugin is a React-based dynamic plugin that extends the OpenShift Console with an "AI Hub" for managing AI-driven cluster operation proposals.
 
 ## System Context
 
-The sandbox sits between the operator (workflow engine) and the LLM provider APIs. It is a stateless worker — each pod processes one query and is disposable.
+The plugin runs inside the OpenShift Console via webpack module federation. It does not have its own backend — it communicates directly with the Kubernetes API (for CRD operations) and proxies requests to the Lightspeed service through the console's plugin proxy mechanism.
+
+```mermaid
+graph TB
+    User[Cluster Administrator]
+    Console[OpenShift Console]
+    Plugin[Agentic Console Plugin]
+    K8sAPI[Kubernetes API Server]
+    Operator[Lightspeed Agentic Operator]
+    Sandbox[Agentic Sandbox Pods]
+    LLM[LLM Providers]
+
+    User --> Console
+    Console --> Plugin
+    Plugin -->|Watch CRDs, Patch Approvals| K8sAPI
+    Plugin -->|Stream Pod Logs| K8sAPI
+    K8sAPI --> Operator
+    Operator -->|Creates/Manages| Sandbox
+    Sandbox -->|Calls| LLM
+    Operator -->|Reconciles| K8sAPI
+```
+
+## Proposal Workflow
+
+A proposal moves through a multi-stage lifecycle. The plugin renders each stage and gates progression on human approval decisions.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pending
+    Pending --> Analyzing: Analysis approved
+    Analyzing --> Proposed: Analysis complete
+    Proposed --> Executing: Execution approved
+    Executing --> Verifying: Execution complete
+    Verifying --> Completed: Verification passed
+    Verifying --> Executing: Verification failed (retry)
+    Verifying --> Escalating: User escalates
+    Escalating --> Escalated: Escalation complete
+    Analyzing --> Failed: Analysis failed
+    Executing --> Failed: Execution failed
+    Proposed --> Denied: User denies
+    Pending --> Denied: User denies
+```
+
+## CRD Relationships
+
+The plugin operates on a set of CRDs in the `agentic.openshift.io/v1alpha1` API group. Each proposal has a companion ProposalApproval CR and is linked to Result CRs by label selectors.
+
+```mermaid
+erDiagram
+    Proposal ||--|| ProposalApproval : "same name/namespace"
+    Proposal ||--o{ AnalysisResult : "label selector"
+    Proposal ||--o{ ExecutionResult : "label selector"
+    Proposal ||--o{ VerificationResult : "label selector"
+    Proposal ||--o{ EscalationResult : "label selector"
+    ApprovalPolicy ||--|| Cluster : "singleton 'cluster'"
+    Agent }o--|| LLMProvider : "references by name"
+```
+
+## Plugin Architecture
+
+The plugin is structured around three exposed modules, each a top-level page component. Shared logic lives in models, hooks, and utility modules.
 
 ```mermaid
 graph LR
-    Operator["Lightspeed Operator<br/>(workflow engine)"]
-    Sandbox["Agentic Sandbox<br/>(FastAPI)"]
-    Anthropic["Anthropic API<br/>(via DeepAgents)"]
-    Gemini["Gemini API<br/>(Google)"]
-    OpenAI["OpenAI API"]
-    Skills["Skills<br/>(mounted volume)"]
+    subgraph "Exposed Modules"
+        PLP[ProposalListPage]
+        PDP[ProposalDetailPage]
+        CP[ConfigurationPage]
+    end
 
-    Operator -->|"POST /v1/agent/run<br/>RunRequest JSON"| Sandbox
-    Sandbox -->|RunResponse JSON| Operator
-    Sandbox -->|provider SDK| Anthropic
-    Sandbox -->|provider SDK| Gemini
-    Sandbox -->|provider SDK| OpenAI
-    Sandbox -->|filesystem| Skills
+    subgraph "Shared"
+        Models[models/proposal.ts<br/>Types + Phase Logic]
+        Hooks[hooks/useStageApproval<br/>Approval State]
+        Utils[utils/approval.ts<br/>Patch Generation]
+    end
+
+    subgraph "Detail Tabs"
+        OT[OverviewTab]
+        PT[ProposalTab]
+        RT[ResultTab]
+        VT[VerificationTab]
+        ET[EscalationTab]
+    end
+
+    subgraph "Dynamic Components"
+        DC[DynamicComponent Registry]
+        VIZ[Visualization]
+        RD[ResourceDiff]
+        CMO[CMO Components]
+    end
+
+    PDP --> OT & PT & RT & VT & ET
+    PT --> DC
+    PDP --> Hooks
+    Hooks --> Utils
+    Hooks --> Models
+    PLP --> Models
+    CP --> Models
 ```
 
-## Internal Architecture
+## Key Architectural Decisions
 
-The application has a layered design: HTTP routes parse requests and format responses, the provider abstraction normalizes query options and events, and thin adapters map between the normalized interface and each vendor SDK.
+**Hand-written CRD types** — Types in `models/proposal.ts` are manually maintained rather than auto-generated from the CRD OpenAPI schema. This was a pragmatic choice for early development velocity but creates a synchronization burden with the operator. A TODO exists to migrate to auto-generation.
 
-```mermaid
-graph TD
-    subgraph "HTTP Layer"
-        App["app.py<br/>FastAPI entry"]
-        Router["routes/<br/>build_router()"]
-        Query["query.py<br/>POST /run handler"]
-        Health["health.py<br/>GET /health, GET /ready"]
-    end
+**Phase derived from conditions** — The proposal phase is not stored as a field; it's derived from `status.conditions[]` using the same algorithm as the operator. This ensures the console and operator always agree on phase, but the derivation function (`derivePhaseFromConditions`) must be kept in sync.
 
-    subgraph "Configuration & Cross-Cutting"
-        Config["config.py<br/>resolve_sdk()<br/>env mapping"]
-        MCP["mcp.py<br/>parse_mcp_servers()"]
-        Audit["audit.py<br/>AuditLogger"]
-        Metrics["metrics.py<br/>Prometheus /metrics"]
-        Tracing["tracing.py<br/>TracerProvider"]
-    end
+**Result CRs as separate resources** — Step outputs (analysis options, execution actions, verification checks) live in their own CRDs rather than inline on the Proposal status. This keeps the Proposal CR lightweight and allows independent lifecycle management. The plugin discovers them via label selectors and correlates via `status.steps.<stage>.results[]` references.
 
-    subgraph "Provider Abstraction"
-        Factory["factory.py<br/>create_provider()"]
-        Types["types.py<br/>AgentProvider ABC<br/>ProviderEvent union<br/>ProviderQueryOptions"]
-        Logger["logging.py<br/>EventLogger"]
-    end
-
-    subgraph "Provider Adapters"
-        DeepAgentsP["deepagents.py<br/>DeepAgentsProvider"]
-        GeminiP["gemini.py<br/>GeminiProvider"]
-        OpenAIP["openai.py<br/>OpenAIProvider"]
-    end
-
-    App --> Config
-    App --> Factory
-    App --> Router
-    App --> Metrics
-    App --> Tracing
-    Router --> Query
-    App --> Health
-    Query --> Types
-    Query --> Logger
-    Query --> MCP
-    Query --> Audit
-    Factory -->|lazy import| DeepAgentsP
-    Factory -->|lazy import| GeminiP
-    Factory -->|lazy import| OpenAIP
-```
-
-## Request Flow
-
-A single request flows through the system as follows:
-
-```mermaid
-sequenceDiagram
-    participant Op as Operator
-    participant Route as POST /run
-    participant Provider as Provider Adapter
-    participant SDK as Vendor SDK
-    participant LLM as LLM API
-
-    Op->>Route: RunRequest JSON
-    Route->>Route: Resolve timeout, system prompt
-    Route->>Route: Format context prefix + query
-    Route->>Provider: query(ProviderQueryOptions)
-    Provider->>SDK: SDK-specific invocation
-    SDK->>LLM: API calls (multi-turn)
-
-    loop Event stream
-        SDK-->>Provider: SDK events
-        Provider-->>Route: ProviderEvent (text_delta, tool_call, etc.)
-        Route->>Route: EventLogger.log()
-    end
-
-    SDK-->>Provider: Final result
-    Provider-->>Route: ResultEvent (text, cost, tokens)
-    Route->>Route: Parse JSON or text fallback
-    Route-->>Op: RunResponse JSON
-```
-
-## Provider Adapter Design
-
-Each adapter is a thin wrapper. The SDK owns tool execution, skill discovery, and multi-turn orchestration. Adapters are responsible only for:
-
-1. Mapping `ProviderQueryOptions` to SDK-specific configuration
-2. Consuming SDK event streams and yielding normalized `ProviderEvent` objects
-3. Extracting cost and token usage from SDK results
-
-| Provider | SDK | Structured Output | Skills | Tools |
-|---|---|---|---|---|
-| DeepAgents | `deepagents` + `langchain-anthropic` | `response_format` Pydantic model | Skills dirs passed to `create_deep_agent()` | `LocalShellBackend` + MCP tools |
-| Gemini | `google-adk` | Response schema on content config | `SkillToolset` from directory | `ExecuteBashTool` + web tools |
-| OpenAI | `openai-agents` | `output_type` wrapper | `Skills` capability | `SandboxAgent` shell/filesystem |
-
-## Container & Deployment
-
-The sandbox ships as a container image built with Konflux hermetic builds (all dependencies prefetched, no network during build).
-
-```mermaid
-graph TD
-    subgraph "Container Image"
-        direction TB
-        Base["UBI 9 base"]
-        Sys["System packages<br/>(bash, git, oc, kubectl, catatonit)"]
-        Py["Python 3.12 + site-packages<br/>(FastAPI, provider SDKs)"]
-        AppSrc["Application source<br/>/app/src/"]
-        SkillMount["Skills mount<br/>/app/skills/ (read-only)"]
-    end
-
-    Base --> Sys --> Py --> AppSrc
-    AppSrc -.-> SkillMount
-
-    subgraph "Runtime"
-        Catatonit["catatonit (PID 1)"]
-        Uvicorn["uvicorn :8080"]
-    end
-
-    Catatonit --> Uvicorn
-```
-
-The container runs as a non-root `agent` user. `catatonit` is the init process (PID 1). Uvicorn serves the FastAPI app on port 8080.
-
-## Key Decisions
-
-- **One provider per pod:** The provider is selected at startup via `LIGHTSPEED_PROVIDER` (mapped to an SDK name by `config.resolve_sdk()`). This keeps pods simple and disposable — the operator chooses which provider to target when creating the pod.
-
-- **Thin adapters over abstraction layers:** Provider modules map SDK events to a normalized union type but do not re-implement SDK behavior. This keeps maintenance cost proportional to SDK surface, not to a custom abstraction.
-
-- **Lazy SDK imports:** Provider SDK packages are optional extras. The factory uses `match`-based lazy imports so the base package loads without any vendor SDK installed.
-
-- **Hermetic builds:** Python wheels and RPMs are declared in lockfiles and prefetched. Some CLI binaries (`oc`, `kubectl`) are copied from Red Hat image stages rather than a generic binary lockfile.
+**Dynamic component registry** — Adapter-defined UI components use a type-dispatch pattern rather than a plugin-within-a-plugin system. The set of known types is hardcoded; adding a new component type requires code changes in the console plugin.
