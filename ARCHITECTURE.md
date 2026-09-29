@@ -38,13 +38,22 @@ stateDiagram-v2
     Proposed --> Executing: Execution approved
     Executing --> Verifying: Execution complete
     Verifying --> Completed: Verification passed
-    Verifying --> Executing: Verification failed (retry)
-    Verifying --> Escalating: User escalates
+    Verifying --> Escalating: Verification result failure or agent-reported timeout (operator sets Verified=False and Escalated=Unknown)
+    Verifying --> Failed: Verification setup, invocation, sandbox, or result-validation failure without Escalated=Unknown
     Escalating --> Escalated: Escalation complete
     Analyzing --> Failed: Analysis failed
     Executing --> Failed: Execution failed
     Proposed --> Denied: User denies
     Pending --> Denied: User denies
+    Verifying --> Denied: User denies verification
+    Escalating --> Denied: User denies escalation
+    Escalating --> Failed: Escalation step fails
+    Pending --> EmergencyStopped: System kill switch
+    Analyzing --> EmergencyStopped: System kill switch
+    Proposed --> EmergencyStopped: System kill switch
+    Executing --> EmergencyStopped: System kill switch
+    Verifying --> EmergencyStopped: System kill switch
+    Escalating --> EmergencyStopped: System kill switch
 ```
 
 ## CRD Relationships

@@ -10,7 +10,7 @@ Implementation spec for compliance audit logging support in the agentic console.
 
 ### Approval Field Population
 
-2. When the user approves or denies a run stage, the console MUST submit the approval decision as a JSON patch to the `AgenticRunApproval` CR. The patch includes decision fields: selected option, max retries, stage, and decision (approve/deny).
+2. When the user approves or denies a run stage, the console MUST submit a JSON patch to the `AgenticRunApproval` CR that adds a stage entry under `spec.stages`. Each added entry identifies its `type` and carries applicable stage payload, such as the selected execution option or optional agent override. A denied entry sets `decision: Denied`; approval is represented by the stage entry without a `decision` field. The patch does not include a retry count.
 
 3. The console does NOT need to populate `spec.approver` identity fields (`uid`, `username`, `timestamp`) on the patch request. The mutating admission webhook in the agentic-operator injects these from the authenticated user's AdmissionReview. If the console does include them, the webhook overwrites them.
 
