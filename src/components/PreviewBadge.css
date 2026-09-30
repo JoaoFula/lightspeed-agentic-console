@@ -1,4 +1,4 @@
-/* Match the standard OpenShift console Dev Preview badge style */
+/* Match the standard OpenShift console preview badge style */
 .ols-plugin__preview-badge {
   /* stylelint-disable-next-line color-no-hex -- Matches Console's preview badge color */
   --pf-v6-c-label--BackgroundColor: #d93f00;

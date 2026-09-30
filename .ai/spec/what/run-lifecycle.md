@@ -29,7 +29,7 @@ The core domain of the plugin: displaying and managing runs through a multi-stag
 9a-i. The target namespaces column reads from `spec.targetNamespaces` (sorted) and renders each as a Namespace resource link. Shows "-" when the list is empty.
 9b. The tokens consumed column displays an aggregate token count read from `status.usage.totalTokens` on the AgenticRun CR. Shows "-" when the count is unavailable.
 9c. Each row has a kebab menu with a "Delete" action. Delete is gated by RBAC — the plugin performs a `useAccessReview` check for `delete` verb on `agenticruns` in API group `agentic.openshift.io`; if the user lacks permission the action is disabled. Selecting Delete opens a `ConfirmationModal`, and confirming calls `k8sDelete` on the AgenticRun CR.
-9d. The list page MUST display a title ("Agentic runs"), a "Dev preview" badge (`PreviewBadge`), and a help-text advisory reminding users to review AI-generated content.
+9d. The list page MUST display a title ("Agentic runs"), a "Tech preview" badge (`PreviewBadge`), and a help-text advisory reminding users to review AI-generated content.
 9e. The list page renders an `AgenticCapabilitiesToggle` card that suspends or resumes the whole agentic system by creating or patching the `AgenticOLSConfig` singleton's `spec.suspended` field. The control is RBAC-gated via `useAccessReview` (create/patch on `agenticolsconfigs`); a confirmation modal guards the state change. When suspended, `AgenticLayout` shows the system-suspended banner (see rule 13).
 
 ### Run Detail — Layout

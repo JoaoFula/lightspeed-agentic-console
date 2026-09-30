@@ -6,7 +6,7 @@ import './PreviewBadge.css';
 
 const PreviewBadge: React.FC = () => {
   const { t } = useTranslation('plugin__lightspeed-agentic-console-plugin');
-  return <Label className="ols-plugin__preview-badge">{t('Dev preview')}</Label>;
+  return <Label className="ols-plugin__preview-badge">{t('Tech preview')}</Label>;
 };
 
 export default PreviewBadge;

@@ -31,7 +31,7 @@ describe('ConfigurationPage', () => {
         'Manage manual or automatic stage approval modes across the agentic troubleshooting lifecycle.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Dev preview')).toBeInTheDocument();
+    expect(screen.getByText('Tech preview')).toBeInTheDocument();
   });
 
   test('navigates to the runs list when the breadcrumb is clicked', () => {
