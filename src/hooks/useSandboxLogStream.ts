@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { consoleFetch } from '@openshift-console/dynamic-plugin-sdk';
 import { SandboxView } from '../models/agenticrun-views';
 import { buildPodLogUrl } from '../utils/agenticrun-utils';
@@ -14,9 +14,6 @@ interface SandboxLogStreamResult {
   error?: string;
 }
 
-const isHealthCheckLine = (line: string) =>
-  line.includes('GET /ready') || line.includes('GET /health');
-
 const appendLines = (prev: string[], newLines: string[]): string[] => {
   const next = [...prev, ...newLines];
   return next.length > MAX_RAW_LINES ? next.slice(-MAX_RAW_LINES) : next;
@@ -27,7 +24,6 @@ export const useSandboxLogStream = (
   active?: boolean,
   streaming?: boolean,
   sinceTime?: string,
-  filterHealthChecks = true,
 ): SandboxLogStreamResult => {
   const [rawLines, setRawLines] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,10 +31,7 @@ export const useSandboxLogStream = (
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const lines = useMemo(
-    () => (filterHealthChecks ? rawLines.filter((line) => !isHealthCheckLine(line)) : rawLines),
-    [rawLines, filterHealthChecks],
-  );
+  const lines = rawLines;
 
   const podName = sandbox?.podName;
   const namespace = sandbox?.namespace;
