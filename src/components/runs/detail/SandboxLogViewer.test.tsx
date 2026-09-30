@@ -80,7 +80,7 @@ test('falls back to pod logs when OTEL returns zero lines', () => {
   renderAndExpand();
 
   expect(screen.getByTestId('log-data')).toHaveTextContent('pod log line');
-  expect(mockPodLogStream).toHaveBeenCalledWith(SANDBOX, true, false, undefined, true);
+  expect(mockPodLogStream).toHaveBeenCalledWith(SANDBOX, true, false, undefined);
 });
 
 test('uses pod logs when OTEL is unavailable', () => {
@@ -89,7 +89,7 @@ test('uses pod logs when OTEL is unavailable', () => {
   renderAndExpand();
 
   expect(screen.getByTestId('log-data')).toHaveTextContent('pod log line');
-  expect(mockPodLogStream).toHaveBeenCalledWith(SANDBOX, true, false, undefined, true);
+  expect(mockPodLogStream).toHaveBeenCalledWith(SANDBOX, true, false, undefined);
 });
 
 test('falls back to pod logs when OTEL fetch errors', () => {
@@ -131,20 +131,6 @@ test('does not show Live label when not streaming', () => {
   );
 
   expect(screen.queryByText('Live')).not.toBeInTheDocument();
-});
-
-test('hides health check checkbox when using OTEL', () => {
-  mockRetainedLogs.mockReturnValue(otelResult({ lines: ['otel line'] }));
-
-  renderAndExpand();
-
-  expect(screen.queryByLabelText('Hide health checks')).not.toBeInTheDocument();
-});
-
-test('shows health check checkbox for pod logs', () => {
-  renderAndExpand();
-
-  expect(screen.getByLabelText('Hide health checks')).toBeInTheDocument();
 });
 
 test('shows loading message while logs are loading', () => {

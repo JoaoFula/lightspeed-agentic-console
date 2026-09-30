@@ -83,7 +83,6 @@
   "Failed to update agentic capabilities": "Failed to update agentic capabilities",
   "Failure reason": "Failure reason",
   "Hide {{title}} logs": "Hide {{title}} logs",
-  "Hide health checks": "Hide health checks",
   "Hide permission details": "Hide permission details",
   "Hide plan details": "Hide plan details",
   "I confirm that cluster safety limits and RBAC permissions have been verified": "I confirm that cluster safety limits and RBAC permissions have been verified",

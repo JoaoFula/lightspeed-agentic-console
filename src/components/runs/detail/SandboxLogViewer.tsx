@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  Checkbox,
   ExpandableSection,
   Label,
   Toolbar,
@@ -37,7 +36,6 @@ export const SandboxLogViewer: FC<SandboxLogViewerProps> = ({
   const runUid = useRunUid();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFollowing, setIsFollowing] = useState(true);
-  const [hideHealthChecks, setHideHealthChecks] = useState(true);
   const logViewerRef = useRef<{ scrollToItem?: (index: number) => void }>(null);
 
   const retained = useRetainedLogs(runUid, isExpanded && !streaming, phase);
@@ -49,7 +47,6 @@ export const SandboxLogViewer: FC<SandboxLogViewerProps> = ({
     isExpanded && !useOtel && !retained.loading,
     streaming,
     sinceTime,
-    hideHealthChecks,
   );
 
   const lines = useOtel ? retained.lines : podLogs.lines;
@@ -95,16 +92,6 @@ export const SandboxLogViewer: FC<SandboxLogViewerProps> = ({
         <ToolbarItem>
           <LogViewerSearch minSearchChars={2} placeholder={t('Search logs...')} />
         </ToolbarItem>
-        {!useOtel && (
-          <ToolbarItem alignSelf="center">
-            <Checkbox
-              id={`health-check-filter-${title}`}
-              isChecked={hideHealthChecks}
-              label={t('Hide health checks')}
-              onChange={(_e, checked) => setHideHealthChecks(checked)}
-            />
-          </ToolbarItem>
-        )}
       </ToolbarContent>
     </Toolbar>
   );
