@@ -4,8 +4,8 @@ import PreviewBadge from './PreviewBadge';
 import { renderWithProviders, screen } from '../test-render';
 
 describe('PreviewBadge', () => {
-  test('renders the dev preview label', () => {
+  test('renders the preview label', () => {
     renderWithProviders(<PreviewBadge />);
-    expect(screen.getByText('Dev preview')).toBeInTheDocument();
+    expect(screen.getByText('Tech preview')).toBeInTheDocument();
   });
 });

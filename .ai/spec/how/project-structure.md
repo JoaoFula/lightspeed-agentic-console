@@ -27,7 +27,7 @@
 | `src/components/AgenticLayout.tsx` | `AgenticLayout` | Watches `AgenticOLSConfig` CR; renders a system-suspended danger banner above page content when `spec.suspended` is true |
 | `src/components/runs/AgenticCapabilitiesToggle.tsx` | `AgenticCapabilitiesToggle` | Card on the run list page that suspends/resumes the agentic system by creating/patching `AgenticOLSConfig.spec.suspended`; RBAC-gated via `useAccessReview` (create/patch) |
 | `src/components/runs/agenticCapabilitiesUtils.ts` | `AGENTIC_OLS_CONFIG_NAME`, `buildAgenticOLSConfig`, `buildSuspendedPatch`, `isNotFoundError` | Pure helpers for the `AgenticOLSConfig` singleton and its suspended patch |
-| `src/components/PreviewBadge.tsx` | `PreviewBadge` | "Dev preview" label shown as the run list page header badge |
+| `src/components/PreviewBadge.tsx` | `PreviewBadge` | "Tech preview" label shown as the run list page header badge |
 | `src/components/ApprovalGatedButton.tsx` | `ApprovalGatedButton` | Reusable approve/deny button with `isAriaDisabled` gating, permission tooltip, and loading state; used by `RemediationOptionCard`, `StageApprovalBanner`, `RunDetailPage` |
 | `src/components/MarkdownContent.tsx` | `MarkdownContent` | Reusable component for rendering sanitized markdown. Wraps `renderMarkdown`/`renderMarkdownInline` with a block-level container (defaults to PatternFly `Content` div). Props: `text` (markdown string), `component` (wrapper element, default `Content`), `inline` (use inline parser for short text like titles). Prevents invalid nested HTML by binding the parse mode to the correct container. |
 | `src/components/CodeBlockWithClipboard.tsx` | `CodeBlockWithClipboard` | Reusable code block with clipboard copy button and expandable truncation for long content |
