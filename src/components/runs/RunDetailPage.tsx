@@ -122,15 +122,23 @@ const RunDetailPage: FC = () => {
   }, [selectedOption]);
 
   const handleApproveExecution = useCallback(async () => {
-    if (executeOptionIndex === null) return;
+    if (executeOptionIndex === null) {
+      return;
+    }
     const success = await approveExecution(executeOptionIndex);
-    if (success) setExecuteOptionIndex(null);
+    if (success) {
+      setExecuteOptionIndex(null);
+    }
   }, [approveExecution, executeOptionIndex]);
 
   const handleDeny = useCallback(async () => {
-    if (!denyingStage) return;
+    if (!denyingStage) {
+      return;
+    }
     const success = await denyStage(denyingStage);
-    if (success) setDenyingStage(null);
+    if (success) {
+      setDenyingStage(null);
+    }
   }, [denyStage, denyingStage]);
 
   const optionData =
@@ -139,7 +147,9 @@ const RunDetailPage: FC = () => {
   const selectedOptionData = selectedOption >= 0 ? view?.options[selectedOption] : undefined;
 
   const handleDownloadSelected = useCallback(() => {
-    if (selectedOptionData) downloadRemediationOption(selectedOptionData);
+    if (selectedOptionData) {
+      downloadRemediationOption(selectedOptionData);
+    }
   }, [selectedOptionData]);
 
   const renderRemediationHub = (v: AgenticRunView): ReactNode => {
@@ -331,7 +341,9 @@ const RunDetailPage: FC = () => {
   );
 
   const renderOptionCards = (opts: { showSpinner?: boolean }) => {
-    if (!view) return null;
+    if (!view) {
+      return null;
+    }
     if (view.executedOptionIndex !== undefined && view.executedOptionIndex < view.options.length) {
       const executedOption = view.options[view.executedOptionIndex];
       if (executedOption) {
@@ -565,9 +577,13 @@ const RunDetailPage: FC = () => {
                       canApproveLoading={canApproveLoading}
                       mutationInProgress={mutationInProgress}
                       onClick={() => {
-                        if (needsApproval.Analysis) setDenyingStage('Analysis');
-                        else if (needsApproval.Verification) setDenyingStage('Verification');
-                        else if (needsApproval.Escalation) setDenyingStage('Escalation');
+                        if (needsApproval.Analysis) {
+                          setDenyingStage('Analysis');
+                        } else if (needsApproval.Verification) {
+                          setDenyingStage('Verification');
+                        } else if (needsApproval.Escalation) {
+                          setDenyingStage('Escalation');
+                        }
                       }}
                       variant="secondary"
                     >

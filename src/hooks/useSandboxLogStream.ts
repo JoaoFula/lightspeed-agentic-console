@@ -38,14 +38,18 @@ export const useSandboxLogStream = (
 
   const doFetch = useCallback(
     (signal: { cancelled: boolean }) => {
-      if (!podName || !namespace) return;
+      if (!podName || !namespace) {
+        return;
+      }
 
       const buildUrl = (overrideSinceTime?: string) => {
         const urlParams: Record<string, string> = { timestamps: 'true' };
         if (streaming) {
           urlParams.follow = 'true';
           const ts = overrideSinceTime ?? sinceTime;
-          if (ts) urlParams.sinceTime = ts;
+          if (ts) {
+            urlParams.sinceTime = ts;
+          }
         } else if (sinceTime) {
           urlParams.sinceTime = sinceTime;
         } else {
@@ -55,9 +59,13 @@ export const useSandboxLogStream = (
       };
 
       const handleError = (err: unknown) => {
-        if (signal.cancelled) return;
+        if (signal.cancelled) {
+          return;
+        }
         const msg = (err as Error)?.message;
-        if (msg === 'The user aborted a request.') return;
+        if (msg === 'The user aborted a request.') {
+          return;
+        }
         setError(msg || 'Failed to load logs');
         setLoading(false);
       };
@@ -91,7 +99,9 @@ export const useSandboxLogStream = (
 
               while (true) {
                 const { done, value } = await reader.read();
-                if (done || signal.cancelled) break;
+                if (done || signal.cancelled) {
+                  break;
+                }
 
                 buffer += decoder.decode(value, { stream: true });
                 const parts = buffer.split('\n');
@@ -141,10 +151,16 @@ export const useSandboxLogStream = (
 
               readerRef.current = null;
 
-              if (signal.cancelled) break;
-              if (receivedData) delay = RECONNECT_BASE_MS;
+              if (signal.cancelled) {
+                break;
+              }
+              if (receivedData) {
+                delay = RECONNECT_BASE_MS;
+              }
             } catch {
-              if (signal.cancelled) break;
+              if (signal.cancelled) {
+                break;
+              }
               readerRef.current = null;
             }
 
@@ -163,18 +179,24 @@ export const useSandboxLogStream = (
             });
             abortRef.current = fetchAc;
 
-            if (signal.cancelled) break;
+            if (signal.cancelled) {
+              break;
+            }
             delay = Math.min(delay * 2, RECONNECT_MAX_MS);
           }
 
-          if (!signal.cancelled) setLoading(false);
+          if (!signal.cancelled) {
+            setLoading(false);
+          }
         };
 
         streamWithReconnect();
       } else {
         consoleFetch(buildUrl(), { signal: fetchAc.signal })
           .then(async (response) => {
-            if (signal.cancelled) return;
+            if (signal.cancelled) {
+              return;
+            }
             const text = await response.text();
             const allLines = text.split('\n').filter(Boolean);
             setRawLines(
@@ -183,7 +205,9 @@ export const useSandboxLogStream = (
           })
           .catch(handleError)
           .finally(() => {
-            if (!signal.cancelled) setLoading(false);
+            if (!signal.cancelled) {
+              setLoading(false);
+            }
           });
       }
     },
@@ -191,7 +215,9 @@ export const useSandboxLogStream = (
   );
 
   useEffect(() => {
-    if (!active || !podName || !namespace) return;
+    if (!active || !podName || !namespace) {
+      return;
+    }
 
     const signal = { cancelled: false };
     // eslint-disable-next-line react-hooks/set-state-in-effect

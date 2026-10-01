@@ -35,8 +35,12 @@ let cachedAvailability: { available: boolean; endpoint: string } | undefined;
 let fetchInFlight: Promise<{ available: boolean; endpoint: string }> | undefined;
 
 const probeConfigMap = async (): Promise<{ available: boolean; endpoint: string }> => {
-  if (cachedAvailability) return cachedAvailability;
-  if (fetchInFlight) return fetchInFlight;
+  if (cachedAvailability) {
+    return cachedAvailability;
+  }
+  if (fetchInFlight) {
+    return fetchInFlight;
+  }
 
   const unavailable = { available: false, endpoint: '' } as const;
 
@@ -46,10 +50,14 @@ const probeConfigMap = async (): Promise<{ available: boolean; endpoint: string 
         `/api/kubernetes/api/v1/namespaces/${encodeURIComponent(RUN_NAMESPACE)}` +
         `/configmaps/${encodeURIComponent(CONFIGMAP_NAME)}`;
       const response = await consoleFetch(url);
-      if (!response.ok) return unavailable;
+      if (!response.ok) {
+        return unavailable;
+      }
       const cm = await response.json();
       const endpoint = cm?.data?.[ADMIN_ENDPOINT_KEY];
-      if (!endpoint) return unavailable;
+      if (!endpoint) {
+        return unavailable;
+      }
       const result = { available: true, endpoint };
       cachedAvailability = result;
       return result;
@@ -67,7 +75,9 @@ const buildServiceProxyBase = (adminEndpoint: string): string | undefined => {
   try {
     const u = new URL(adminEndpoint);
     const hostParts = u.hostname.split('.');
-    if (hostParts.length < 2) return undefined;
+    if (hostParts.length < 2) {
+      return undefined;
+    }
     const serviceName = hostParts[0];
     const namespace = hostParts[1];
     const port = u.port || '8080';
@@ -106,7 +116,9 @@ export const useRetainedLogs = (
   const doFetch = useCallback(
     async (signal: { cancelled: boolean }) => {
       const probe = await probeConfigMap();
-      if (signal.cancelled) return;
+      if (signal.cancelled) {
+        return;
+      }
 
       setAvailable(probe.available);
 
@@ -142,10 +154,14 @@ export const useRetainedLogs = (
             throw new Error(`Failed to fetch retained logs (HTTP ${response.status})`);
           }
           const page: OtelLogsResponse = await response.json();
-          if (signal.cancelled) return;
+          if (signal.cancelled) {
+            return;
+          }
 
           records.push(...page.records);
-          if (!page.has_more || records.length >= MAX_LINES) break;
+          if (!page.has_more || records.length >= MAX_LINES) {
+            break;
+          }
 
           const lastId = page.records[page.records.length - 1]?.id;
           if (page.records.length === 0 || lastId === undefined || lastId <= after) {
@@ -159,19 +175,27 @@ export const useRetainedLogs = (
           setError(undefined);
         }
       } catch (err) {
-        if (signal.cancelled) return;
+        if (signal.cancelled) {
+          return;
+        }
         const msg = (err as Error)?.message;
-        if (msg === 'The user aborted a request.') return;
+        if (msg === 'The user aborted a request.') {
+          return;
+        }
         setError(msg || t('Failed to load retained logs'));
       } finally {
-        if (!signal.cancelled) setLoading(false);
+        if (!signal.cancelled) {
+          setLoading(false);
+        }
       }
     },
     [phase, runUid, t],
   );
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      return;
+    }
 
     const signal = { cancelled: false };
     // eslint-disable-next-line react-hooks/set-state-in-effect

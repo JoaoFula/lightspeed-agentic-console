@@ -38,7 +38,9 @@ describe('downloadRemediationOption', () => {
     const realCreateElement = document.createElement.bind(document);
     vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
       const element = realCreateElement(tagName);
-      if (tagName === 'a') downloadedAnchor = element as HTMLAnchorElement;
+      if (tagName === 'a') {
+        downloadedAnchor = element as HTMLAnchorElement;
+      }
       return element;
     });
 

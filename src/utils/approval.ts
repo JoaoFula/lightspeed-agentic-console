@@ -17,7 +17,9 @@ export const getStageStatus = (
   stageType: ApprovalStageType,
 ): 'approved' | 'denied' | 'pending' => {
   const stage = findStage(approval, stageType);
-  if (!stage) return 'pending';
+  if (!stage) {
+    return 'pending';
+  }
   return stage.decision === 'Denied' ? 'denied' : 'approved';
 };
 
@@ -27,9 +29,15 @@ export const stageNeedsApproval = (
   conditions: AgenticRunCondition[] | undefined,
   phase: AgenticRunPhase,
 ): boolean => {
-  if (!approval) return false;
-  if (findStage(approval, stageType)) return false;
-  if (TERMINAL_PHASES.includes(phase)) return false;
+  if (!approval) {
+    return false;
+  }
+  if (findStage(approval, stageType)) {
+    return false;
+  }
+  if (TERMINAL_PHASES.includes(phase)) {
+    return false;
+  }
 
   const get = (type: string) => conditions?.find((c) => c.type === type);
 
@@ -58,7 +66,9 @@ export const buildApprovalPatch = (
   options?: { option?: number; agent?: string },
 ): PatchOp[] => {
   const stage: ApprovalStage = { type: stageType };
-  if (denied) stage.decision = 'Denied';
+  if (denied) {
+    stage.decision = 'Denied';
+  }
 
   switch (stageType) {
     case 'Analysis':

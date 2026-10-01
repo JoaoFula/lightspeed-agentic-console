@@ -45,4 +45,6 @@ export default tseslint.config(
     }
   },
   prettier,
+  // eslint-config-prettier disables curly, so re-enable it after prettier to require blocks
+  { rules: { curly: ['error', 'all'] } },
 );
