@@ -24,7 +24,9 @@ export const useExecutionLogActions = (
 
   const doFetch = useCallback(
     (signal: { cancelled: boolean }, ac: AbortController) => {
-      if (!podName || !namespace) return;
+      if (!podName || !namespace) {
+        return;
+      }
 
       const urlParams: Record<string, string> = sinceTime ? { sinceTime } : { tailLines: '500' };
       const url = buildPodLogUrl(namespace, podName, urlParams);
@@ -32,7 +34,9 @@ export const useExecutionLogActions = (
       consoleFetch(url, { signal: ac.signal })
         .then(async (response) => response.text())
         .then((logText: string) => {
-          if (signal.cancelled) return;
+          if (signal.cancelled) {
+            return;
+          }
           let lastActions: ExecutionActionView[] | undefined;
           for (const line of logText.split('\n')) {
             try {
@@ -47,23 +51,33 @@ export const useExecutionLogActions = (
               /* skip non-JSON lines */
             }
           }
-          if (lastActions) setActions(lastActions);
+          if (lastActions) {
+            setActions(lastActions);
+          }
         })
         .catch((err) => {
-          if (signal.cancelled) return;
+          if (signal.cancelled) {
+            return;
+          }
           const msg = (err as Error)?.message;
-          if (msg === 'The user aborted a request.') return;
+          if (msg === 'The user aborted a request.') {
+            return;
+          }
           setError(msg || 'Failed to load logs');
         })
         .finally(() => {
-          if (!signal.cancelled) setLoading(false);
+          if (!signal.cancelled) {
+            setLoading(false);
+          }
         });
     },
     [podName, namespace, sinceTime],
   );
 
   useEffect(() => {
-    if (skip || !podName || !namespace) return;
+    if (skip || !podName || !namespace) {
+      return;
+    }
 
     const signal = { cancelled: false };
     const ac = new AbortController();

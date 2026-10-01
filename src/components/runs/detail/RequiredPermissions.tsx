@@ -32,7 +32,9 @@ interface NamespaceCellProps {
 }
 
 const NamespaceCell: FC<NamespaceCellProps> = ({ namespace }) => {
-  if (namespace === '') return <>{'—'}</>;
+  if (namespace === '') {
+    return <>{'—'}</>;
+  }
   return (
     <ResourceLink className="ols-plugin__rbac-namespace-link" kind="Namespace" name={namespace} />
   );
@@ -45,7 +47,9 @@ interface ResourceCellProps {
 
 const ResourceCell: FC<ResourceCellProps> = ({ rule, pluralToKind }) => {
   const kinds = rule.resources.map((r) => resolveKind(pluralToKind, rule.apiGroups, r));
-  if (!rule.resourceNames?.length) return <code>{formatResource(rule)}</code>;
+  if (!rule.resourceNames?.length) {
+    return <code>{formatResource(rule)}</code>;
+  }
   return (
     <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsXs' }}>
       {kinds.map((kind, j) => (
@@ -75,7 +79,9 @@ export const RequiredPermissions: FC<RequiredPermissionsProps> = ({ rbac }) => {
   const clusterCount = countClusterRules(rules);
   const writeSummary = useMemo(() => summarizeWritePermissions(rules), [rules]);
 
-  if (rules.length === 0) return null;
+  if (rules.length === 0) {
+    return null;
+  }
 
   return (
     <FlexItem>

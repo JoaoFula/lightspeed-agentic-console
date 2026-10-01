@@ -563,28 +563,42 @@ export const getPhaseDisplay = (phase?: AgenticRunPhase | string): PhaseDisplay 
 
 // SYNC: must match DerivePhase in lightspeed-agentic-operator/api/v1alpha1/agenticrun_types.go
 export const derivePhaseFromConditions = (conditions?: AgenticRunCondition[]): AgenticRunPhase => {
-  if (!conditions?.length) return 'Pending';
+  if (!conditions?.length) {
+    return 'Pending';
+  }
 
   const get = (type: string) => conditions.find((c) => c.type === type);
 
   const emergencyStopped = get('EmergencyStopped');
-  if (emergencyStopped?.status === 'True') return 'EmergencyStopped';
+  if (emergencyStopped?.status === 'True') {
+    return 'EmergencyStopped';
+  }
 
   const escalated = get('Escalated');
-  if (escalated?.status === 'True') return 'Escalated';
+  if (escalated?.status === 'True') {
+    return 'Escalated';
+  }
 
   const denied = get('Denied');
-  if (denied?.status === 'True') return 'Denied';
+  if (denied?.status === 'True') {
+    return 'Denied';
+  }
 
   if (escalated) {
-    if (escalated.status === 'Unknown') return 'Escalating';
+    if (escalated.status === 'Unknown') {
+      return 'Escalating';
+    }
     return 'Failed';
   }
 
   const verified = get('Verified');
   if (verified) {
-    if (verified.status === 'True') return 'Completed';
-    if (verified.status === 'Unknown') return 'Verifying';
+    if (verified.status === 'True') {
+      return 'Completed';
+    }
+    if (verified.status === 'Unknown') {
+      return 'Verifying';
+    }
     // Verified=False maps to Failed. When the operator escalates on
     // verification failure it sets the Escalated condition, which is checked
     // above and takes precedence over this branch.
@@ -593,18 +607,26 @@ export const derivePhaseFromConditions = (conditions?: AgenticRunCondition[]): A
 
   const executed = get('Executed');
   if (executed) {
-    if (executed.status === 'True') return 'Verifying';
-    if (executed.status === 'Unknown') return 'Executing';
+    if (executed.status === 'True') {
+      return 'Verifying';
+    }
+    if (executed.status === 'Unknown') {
+      return 'Executing';
+    }
     return 'Failed';
   }
 
   const analyzed = get('Analyzed');
   if (analyzed) {
     if (analyzed.status === 'True') {
-      if (analyzed.reason === 'NoActionRequired') return 'Completed';
+      if (analyzed.reason === 'NoActionRequired') {
+        return 'Completed';
+      }
       return 'Proposed';
     }
-    if (analyzed.status === 'Unknown') return 'Analyzing';
+    if (analyzed.status === 'Unknown') {
+      return 'Analyzing';
+    }
     return 'Failed';
   }
 
@@ -619,15 +641,21 @@ export const isNoActionRequired = (conditions?: AgenticRunCondition[]): boolean 
 // Returns a human-readable reason for a Failed run, taken from the failing
 // condition in the same precedence order derivePhaseFromConditions uses.
 export const deriveFailureReason = (conditions?: AgenticRunCondition[]): string | undefined => {
-  if (!conditions?.length) return undefined;
+  if (!conditions?.length) {
+    return undefined;
+  }
 
   const get = (type: string) => conditions.find((c) => c.type === type);
   const failed = ['Escalated', 'Verified', 'Executed', 'Analyzed']
     .map((type) => get(type))
     .find((c) => c?.status === 'False');
 
-  if (!failed) return undefined;
-  if (failed.reason && failed.message) return `${failed.reason}: ${failed.message}`;
+  if (!failed) {
+    return undefined;
+  }
+  if (failed.reason && failed.message) {
+    return `${failed.reason}: ${failed.message}`;
+  }
   return failed.message ?? failed.reason;
 };
 

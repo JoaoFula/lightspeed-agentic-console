@@ -139,7 +139,9 @@ const RunListPage: React.FC = () => {
   const [deleteInProgress, setDeleteInProgress] = React.useState(false);
 
   const handleDelete = React.useCallback(async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget) {
+      return;
+    }
     setDeleteInProgress(true);
     setDeleteError('');
     try {

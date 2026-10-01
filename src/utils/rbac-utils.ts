@@ -21,7 +21,9 @@ export const resolveKind = (
 ): string | undefined => {
   for (const g of apiGroups) {
     const kind = pluralToKind.get(`${g}/${plural}`);
-    if (kind) return kind;
+    if (kind) {
+      return kind;
+    }
   }
   return undefined;
 };

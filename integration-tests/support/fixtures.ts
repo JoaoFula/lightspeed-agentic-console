@@ -47,7 +47,9 @@ export const gatherClusterArtifacts = (): void => {
   }
 
   const podsJson = safeOc(['get', 'pods', '-n', OLS_NAMESPACE, '-o', 'json']);
-  if (!podsJson) return;
+  if (!podsJson) {
+    return;
+  }
 
   try {
     const pods = JSON.parse(podsJson);

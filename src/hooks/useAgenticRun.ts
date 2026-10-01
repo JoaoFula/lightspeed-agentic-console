@@ -56,7 +56,9 @@ export const mapRootCause = (
   analysis: AnalysisResultK8s | undefined,
 ): RootCauseView | undefined => {
   const diagnosis = analysis?.status?.options?.[0]?.diagnosis ?? analysis?.status?.diagnosis;
-  if (!diagnosis) return undefined;
+  if (!diagnosis) {
+    return undefined;
+  }
 
   return {
     cause: diagnosis.rootCause,
@@ -88,7 +90,9 @@ export const mapExecution = (
   execution: ExecutionResultK8s | undefined,
   executionSandbox?: { claimName?: string; namespace?: string },
 ): ExecutionView | undefined => {
-  if (!execution) return undefined;
+  if (!execution) {
+    return undefined;
+  }
 
   const actions = execution.status?.actionsTaken ?? [];
   const rootCause = options?.[0]?.diagnosis?.rootCause ?? '';
@@ -127,7 +131,9 @@ export const mapVerification = (
   verificationResult: VerificationResultK8s | undefined,
   verificationSandbox?: { claimName?: string; namespace?: string },
 ): VerificationView | undefined => {
-  if (!verificationResult) return undefined;
+  if (!verificationResult) {
+    return undefined;
+  }
 
   return {
     summary: verificationResult.status?.summary,
@@ -149,7 +155,9 @@ export const mapEscalation = (
   escalationResult: EscalationResultK8s | undefined,
   escalationSandbox?: { claimName?: string; namespace?: string },
 ): EscalationView | undefined => {
-  if (!escalationResult) return undefined;
+  if (!escalationResult) {
+    return undefined;
+  }
 
   return {
     summary: escalationResult.status?.summary,
@@ -163,9 +171,15 @@ export const mapEscalation = (
 };
 
 const condVariant = (reason?: string): TimelineEvent['variant'] => {
-  if (reason === 'Succeeded' || reason === 'Complete') return 'success';
-  if (reason === 'Failed') return 'danger';
-  if (reason === 'StepStarted') return 'info';
+  if (reason === 'Succeeded' || reason === 'Complete') {
+    return 'success';
+  }
+  if (reason === 'Failed') {
+    return 'danger';
+  }
+  if (reason === 'StepStarted') {
+    return 'info';
+  }
   return 'default';
 };
 
@@ -218,7 +232,9 @@ export const mapTimeline = (
 
   for (const { conditions, label, currentPhase, failureReason } of conditionSources) {
     for (const cond of conditions ?? []) {
-      if (cond.type === 'Completed' && cond.status !== 'True') continue;
+      if (cond.type === 'Completed' && cond.status !== 'True') {
+        continue;
+      }
       if (
         cond.type === 'Completed' &&
         cond.status === 'True' &&
@@ -288,8 +304,12 @@ export const mapTimeline = (
   events.sort((a, b) => {
     const tsA = a.timestamp ?? '';
     const tsB = b.timestamp ?? '';
-    if (!tsA && tsB) return 1;
-    if (tsA && !tsB) return -1;
+    if (!tsA && tsB) {
+      return 1;
+    }
+    if (tsA && !tsB) {
+      return -1;
+    }
     return tsA.localeCompare(tsB);
   });
   return events;
@@ -299,13 +319,19 @@ export const filterLatest = <T extends K8sResourceCommon>(
   results: T[] | undefined,
   refs?: StepResultRef[],
 ): T | undefined => {
-  if (!results || results.length === 0) return undefined;
-  if (results.length === 1) return results[0];
+  if (!results || results.length === 0) {
+    return undefined;
+  }
+  if (results.length === 1) {
+    return results[0];
+  }
 
   if (refs?.length) {
     const latestRef = refs[refs.length - 1];
     const match = results.find((r) => r.metadata?.name === latestRef.name);
-    if (match) return match;
+    if (match) {
+      return match;
+    }
   }
 
   return results.reduce((latest, item) => {
@@ -321,7 +347,9 @@ export const buildExecutionRecord = (
   approver: ApproverInfo | undefined,
   executionStartedAt: string | undefined,
 ): ExecutionRecordView | undefined => {
-  if (!execStage) return undefined;
+  if (!execStage) {
+    return undefined;
+  }
 
   const optionIndex = execStage.execution?.option;
   const selectedOption = optionIndex !== undefined ? options?.[optionIndex]?.title : undefined;
@@ -349,7 +377,9 @@ export const mapToAgenticRunView = (
   escalation: EscalationResultK8s | undefined,
   t: TFunction,
 ): AgenticRunView | undefined => {
-  if (!run?.metadata?.name) return undefined;
+  if (!run?.metadata?.name) {
+    return undefined;
+  }
 
   const phase = derivePhaseFromConditions(run.status?.conditions);
   const options = analysis?.status?.options;
@@ -372,7 +402,9 @@ export const mapToAgenticRunView = (
       approval?.spec?.approver,
       mappedExecution.executionStartedAt,
     );
-    if (record) mappedExecution.executionRecord = record;
+    if (record) {
+      mappedExecution.executionRecord = record;
+    }
   }
 
   return {

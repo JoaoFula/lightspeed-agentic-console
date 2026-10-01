@@ -7,9 +7,13 @@ import type { AgenticRunK8s } from '../models/agenticrun';
  */
 export const getTokenTotal = (obj: AgenticRunK8s): number | undefined => {
   const tu = obj.status?.tokenUsage;
-  if (!tu) return undefined;
+  if (!tu) {
+    return undefined;
+  }
   // Both fields undefined means no data yet - treat like missing for sorting, not zero.
-  if (tu.inputTokens == null && tu.outputTokens == null) return undefined;
+  if (tu.inputTokens == null && tu.outputTokens == null) {
+    return undefined;
+  }
   return (tu.inputTokens ?? 0) + (tu.outputTokens ?? 0);
 };
 
@@ -22,7 +26,9 @@ export const getTokenTotal = (obj: AgenticRunK8s): number | undefined => {
  */
 export const formatTokenCell = (obj: AgenticRunK8s): string => {
   const tu = obj.status?.tokenUsage;
-  if (!tu) return '-';
+  if (!tu) {
+    return '-';
+  }
 
   const inp = tu.inputTokens != null ? tu.inputTokens.toLocaleString() : '-';
   const out = tu.outputTokens != null ? tu.outputTokens.toLocaleString() : '-';
@@ -43,10 +49,16 @@ export const compareTokenUsage = (
     const totalB = getTokenTotal(b);
 
     // Both missing → stable (equal)
-    if (totalA === undefined && totalB === undefined) return 0;
+    if (totalA === undefined && totalB === undefined) {
+      return 0;
+    }
     // One missing → push it to the end, regardless of direction
-    if (totalA === undefined) return 1;
-    if (totalB === undefined) return -1;
+    if (totalA === undefined) {
+      return 1;
+    }
+    if (totalB === undefined) {
+      return -1;
+    }
 
     const cmp = totalA - totalB;
     return direction === 'desc' ? -cmp : cmp;
