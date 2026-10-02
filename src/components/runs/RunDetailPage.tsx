@@ -89,6 +89,7 @@ const RunDetailPage: FC = () => {
     clearMutationError,
   } = useAgenticRun(name, namespace);
 
+  const targetCluster = view?.targetCluster?.trim();
   const phaseKey = view?.phase ?? 'unknown';
   const [selectedOption, setSelectedOption] = useState(-1);
   const [expandedOptions, setExpandedOptions] = useState<Set<number>>(new Set());
@@ -415,6 +416,13 @@ const RunDetailPage: FC = () => {
                   <FlexItem>
                     <PreviewBadge />
                   </FlexItem>
+                  {targetCluster && (
+                    <FlexItem>
+                      <Label data-test="target-cluster-badge" isCompact variant="outline">
+                        {`${t('Target cluster')}: ${targetCluster}`}
+                      </Label>
+                    </FlexItem>
+                  )}
                   {view &&
                     view.targetNamespaces?.map((ns) => (
                       <FlexItem key={ns}>
