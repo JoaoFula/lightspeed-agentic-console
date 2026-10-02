@@ -133,7 +133,7 @@ export const SandboxLogViewer: FC<SandboxLogViewerProps> = ({
           }
           footer={footer}
           hasLineNumbers
-          height={400}
+          height={280}
           innerRef={logViewerRef}
           isTextWrapped
           onScroll={handleScroll}
