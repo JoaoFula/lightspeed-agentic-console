@@ -27,6 +27,7 @@ The core domain of the plugin: displaying and managing runs through a multi-stag
 9. Each row MUST show: name (linked to detail), target namespaces, trigger domain, phase label, tokens consumed, age, and a kebab actions menu.
 9a. The trigger domain column reads from the `agentic.openshift.io/source` label on the AgenticRun CR. Shows "-" when the label is absent. Depends on [OLS-3299] for backend population of the label.
 9a-i. The target namespaces column reads from `spec.targetNamespaces` (sorted) and renders each as a Namespace resource link. Shows "-" when the list is empty.
+9a-ii. The target cluster column is shown when any watched AgenticRun has a non-blank `spec.targetCluster` value, regardless of the current list filters. It displays that value for each run, or "-" if the field is missing or blank.
 9b. The tokens consumed column displays an aggregate token count read from `status.usage.totalTokens` on the AgenticRun CR. Shows "-" when the count is unavailable.
 9c. Each row has a kebab menu with a "Delete" action. Delete is gated by RBAC — the plugin performs a `useAccessReview` check for `delete` verb on `agenticruns` in API group `agentic.openshift.io`; if the user lacks permission the action is disabled. Selecting Delete opens a `ConfirmationModal`, and confirming calls `k8sDelete` on the AgenticRun CR.
 9d. The list page MUST display a title ("Agentic runs"), a "Tech preview" badge (`PreviewBadge`), and a help-text advisory reminding users to review AI-generated content.
