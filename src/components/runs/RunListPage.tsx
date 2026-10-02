@@ -55,6 +55,8 @@ const getTriggerDomain = (obj: AgenticRunK8s): string =>
 const getTargetNamespaces = (obj: AgenticRunK8s): string[] =>
   [...(obj.spec?.targetNamespaces ?? [])].sort();
 
+const getTargetCluster = (obj: AgenticRunK8s): string => obj.spec?.targetCluster?.trim() ?? '';
+
 const RunKebab: React.FC<{
   obj: AgenticRunK8s;
   canDelete: boolean;
@@ -154,9 +156,25 @@ const RunListPage: React.FC = () => {
     }
   }, [deleteTarget]);
 
+  // Use the full watch result so filtering cannot hide the column for other runs.
+  const showTargetCluster = (runs ?? []).some((run) => getTargetCluster(run) !== '');
+
   const columns: TableColumn<AgenticRunK8s>[] = React.useMemo(
     () => [
       { id: 'name', sort: 'metadata.name', title: t('Name') },
+      ...(showTargetCluster
+        ? [
+            {
+              id: 'target-cluster',
+              sort: (data: AgenticRunK8s[], direction: 'asc' | 'desc') =>
+                [...data].sort((a, b) => {
+                  const cmp = getTargetCluster(a).localeCompare(getTargetCluster(b));
+                  return direction === 'desc' ? -cmp : cmp;
+                }),
+              title: t('Target cluster'),
+            },
+          ]
+        : []),
       {
         id: 'namespace',
         sort: (data, direction) =>
@@ -196,7 +214,7 @@ const RunListPage: React.FC = () => {
       { id: 'age', sort: 'metadata.creationTimestamp', title: t('Created') },
       { id: '', props: { className: 'pf-v6-c-table__action' }, title: '' },
     ],
-    [t],
+    [showTargetCluster, t],
   );
 
   const RunRow = React.useCallback<React.FC<RowProps<AgenticRunK8s>>>(
@@ -211,6 +229,11 @@ const RunListPage: React.FC = () => {
             <ResourceIcon groupVersionKind={LightspeedAgenticRunGVK} />{' '}
             <Link to={detailPath}>{obj.metadata.name}</Link>
           </TableData>
+          {showTargetCluster && (
+            <TableData activeColumnIDs={activeColumnIDs} id="target-cluster">
+              {getTargetCluster(obj) || '-'}
+            </TableData>
+          )}
           <TableData activeColumnIDs={activeColumnIDs} id="namespace">
             {targetNamespaces.length > 0
               ? targetNamespaces.map((ns) => <ResourceLink key={ns} kind="Namespace" name={ns} />)
@@ -234,7 +257,7 @@ const RunListPage: React.FC = () => {
         </>
       );
     },
-    [canDelete],
+    [canDelete, showTargetCluster],
   );
 
   const filters: RowFilter<AgenticRunK8s>[] = React.useMemo(() => {

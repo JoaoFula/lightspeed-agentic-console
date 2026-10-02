@@ -437,6 +437,7 @@ export type LightspeedAgenticRun = {
   };
   spec: {
     request: string;
+    targetCluster?: string;
     targetNamespaces?: string[];
     analysisOutput?: {
       mode?: 'Default' | 'Minimal';
