@@ -57,6 +57,60 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe('RunDetailPage target cluster badge', () => {
+  test('renders between Tech preview and the target namespaces', () => {
+    mockHook(makeView({ targetCluster: 'remote-cluster', targetNamespaces: ['app-a', 'app-b'] }));
+    renderWithProviders(<RunDetailPage />);
+
+    const badge = screen.getByTestId('target-cluster-badge');
+    expect(badge).toHaveTextContent('Target cluster: remote-cluster');
+    expect(
+      screen.getByText('Tech preview').compareDocumentPosition(badge) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    screen.getAllByTestId('resource-link').forEach((namespace) => {
+      expect(
+        badge.compareDocumentPosition(namespace) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    });
+  });
+
+  test('trims whitespace from the target cluster value', () => {
+    mockHook(makeView({ targetCluster: '  remote-cluster  ' }));
+    renderWithProviders(<RunDetailPage />);
+
+    expect(screen.getByTestId('target-cluster-badge').textContent).toBe(
+      'Target cluster: remote-cluster',
+    );
+  });
+
+  test.each([undefined, '', '   '])(
+    'is hidden for a missing or blank value (%j)',
+    (targetCluster) => {
+      mockHook(makeView({ targetCluster, targetNamespaces: ['app-a'] }));
+      renderWithProviders(<RunDetailPage />);
+
+      expect(screen.queryByTestId('target-cluster-badge')).not.toBeInTheDocument();
+      expect(screen.getByText('Tech preview')).toBeInTheDocument();
+      expect(screen.getByText('app-a')).toBeInTheDocument();
+    },
+  );
+
+  test('updates when the watched run changes', () => {
+    mockHook(makeView({}));
+    const { rerender } = renderWithProviders(<RunDetailPage />);
+    expect(screen.queryByTestId('target-cluster-badge')).not.toBeInTheDocument();
+
+    mockHook(makeView({ targetCluster: 'remote-cluster' }));
+    rerender(<RunDetailPage />);
+    expect(screen.getByTestId('target-cluster-badge')).toHaveTextContent('remote-cluster');
+
+    mockHook(makeView({ targetCluster: '   ' }));
+    rerender(<RunDetailPage />);
+    expect(screen.queryByTestId('target-cluster-badge')).not.toBeInTheDocument();
+  });
+});
+
 describe('RunDetailPage remediation plans failure rendering', () => {
   test('renders the failure card when a Failed run has no remediation options', () => {
     mockHook(makeView({ failureReason: 'Analysis pod exceeded memory limit', options: [] }));

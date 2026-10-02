@@ -104,6 +104,7 @@ export interface AgenticRunView {
   source?: string;
   advisory?: boolean;
   noActionRequired?: boolean;
+  targetCluster?: string;
   targetNamespaces?: string[];
   failureReason?: string;
   rootCause?: RootCauseView;

@@ -664,6 +664,34 @@ describe('mapTimeline escalation events', () => {
   });
 });
 
+describe('mapToAgenticRunView target cluster', () => {
+  const t = ((key: string) => key) as unknown as Parameters<typeof mapToAgenticRunView>[6];
+
+  test.each(['remote-cluster', undefined, '', '   '])(
+    'maps spec.targetCluster (%j) without waiting for result CRs',
+    (targetCluster) => {
+      const run: AgenticRunK8s = {
+        apiVersion: 'agentic.openshift.io/v1alpha1',
+        kind: 'AgenticRun',
+        metadata: { name: 'run-1', namespace: 'default' },
+        spec: { request: 'Fix alert', targetCluster },
+      };
+      const view = mapToAgenticRunView(
+        run,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        t,
+      );
+
+      expect(view).toBeDefined();
+      expect(view?.targetCluster).toBe(targetCluster);
+    },
+  );
+});
+
 describe('mapToAgenticRunView failureReason precedence', () => {
   const t = ((key: string) => key) as unknown as Parameters<typeof mapToAgenticRunView>[6];
 

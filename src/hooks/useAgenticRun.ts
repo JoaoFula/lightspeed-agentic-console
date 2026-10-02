@@ -413,6 +413,7 @@ export const mapToAgenticRunView = (
     source: run.metadata?.labels?.[RUN_LABEL_SOURCE],
     advisory: !run.spec?.execution,
     noActionRequired: isNoActionRequired(run.status?.conditions),
+    targetCluster: run.spec?.targetCluster,
     targetNamespaces: run.spec?.targetNamespaces,
     failureReason,
     rootCause: mapRootCause(analysis),
