@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import {
-  DocumentTitle,
-  ResourceIcon,
-  ResourceLink,
-  Timestamp,
-} from '@openshift-console/dynamic-plugin-sdk';
+import { DocumentTitle, ResourceIcon, Timestamp } from '@openshift-console/dynamic-plugin-sdk';
 import {
   ActionList,
   ActionListGroup,
@@ -423,12 +418,6 @@ const RunDetailPage: FC = () => {
                       </Label>
                     </FlexItem>
                   )}
-                  {view &&
-                    view.targetNamespaces?.map((ns) => (
-                      <FlexItem key={ns}>
-                        <ResourceLink kind="Namespace" name={ns} />
-                      </FlexItem>
-                    ))}
                   {view?.source && (
                     <FlexItem>
                       <Label

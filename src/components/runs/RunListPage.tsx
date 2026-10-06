@@ -7,7 +7,6 @@ import {
   ListPageFilter,
   ListPageHeader,
   ResourceIcon,
-  ResourceLink,
   RowFilter,
   RowProps,
   TableColumn,
@@ -51,9 +50,6 @@ import { RunPhaseLabel } from './detail/RunPhaseLabel';
 
 const getTriggerDomain = (obj: AgenticRunK8s): string =>
   obj.metadata?.labels?.[RUN_LABEL_SOURCE] || '';
-
-const getTargetNamespaces = (obj: AgenticRunK8s): string[] =>
-  [...(obj.spec?.targetNamespaces ?? [])].sort();
 
 const getTargetCluster = (obj: AgenticRunK8s): string => obj.spec?.targetCluster?.trim() ?? '';
 
@@ -176,17 +172,6 @@ const RunListPage: React.FC = () => {
           ]
         : []),
       {
-        id: 'namespace',
-        sort: (data, direction) =>
-          [...data].sort((a, b) => {
-            const cmp = getTargetNamespaces(a)
-              .join(',')
-              .localeCompare(getTargetNamespaces(b).join(','));
-            return direction === 'desc' ? -cmp : cmp;
-          }),
-        title: t('Target namespaces'),
-      },
-      {
         id: 'trigger-domain',
         sort: (data, direction) =>
           [...data].sort((a, b) => {
@@ -221,7 +206,6 @@ const RunListPage: React.FC = () => {
     ({ activeColumnIDs, obj }) => {
       const triggerDomain = getTriggerDomain(obj);
       const phase = derivePhaseFromConditions(obj.status?.conditions as AgenticRunCondition[]);
-      const targetNamespaces = getTargetNamespaces(obj);
       const detailPath = `/lightspeed/runs/${obj.metadata.namespace}/${obj.metadata.name}`;
       return (
         <>
@@ -234,11 +218,6 @@ const RunListPage: React.FC = () => {
               {getTargetCluster(obj) || '-'}
             </TableData>
           )}
-          <TableData activeColumnIDs={activeColumnIDs} id="namespace">
-            {targetNamespaces.length > 0
-              ? targetNamespaces.map((ns) => <ResourceLink key={ns} kind="Namespace" name={ns} />)
-              : '-'}
-          </TableData>
           <TableData activeColumnIDs={activeColumnIDs} id="trigger-domain">
             {triggerDomain ? <Label variant="outline">{triggerDomain}</Label> : '-'}
           </TableData>

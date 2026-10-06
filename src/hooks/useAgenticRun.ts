@@ -414,7 +414,6 @@ export const mapToAgenticRunView = (
     advisory: !run.spec?.execution,
     noActionRequired: isNoActionRequired(run.status?.conditions),
     targetCluster: run.spec?.targetCluster,
-    targetNamespaces: run.spec?.targetNamespaces,
     failureReason,
     rootCause: mapRootCause(analysis),
     analysisCreatedAt: analysis?.metadata?.creationTimestamp,

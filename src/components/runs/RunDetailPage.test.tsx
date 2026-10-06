@@ -58,8 +58,8 @@ afterEach(() => {
 });
 
 describe('RunDetailPage target cluster badge', () => {
-  test('renders between Tech preview and the target namespaces', () => {
-    mockHook(makeView({ targetCluster: 'remote-cluster', targetNamespaces: ['app-a', 'app-b'] }));
+  test('renders between Tech preview and the trigger domain', () => {
+    mockHook(makeView({ source: 'alerts', targetCluster: 'remote-cluster' }));
     renderWithProviders(<RunDetailPage />);
 
     const badge = screen.getByTestId('target-cluster-badge');
@@ -68,11 +68,10 @@ describe('RunDetailPage target cluster badge', () => {
       screen.getByText('Tech preview').compareDocumentPosition(badge) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    screen.getAllByTestId('resource-link').forEach((namespace) => {
-      expect(
-        badge.compareDocumentPosition(namespace) & Node.DOCUMENT_POSITION_FOLLOWING,
-      ).toBeTruthy();
-    });
+    expect(
+      badge.compareDocumentPosition(screen.getByText('Trigger domain: alerts')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   test('trims whitespace from the target cluster value', () => {
@@ -87,12 +86,11 @@ describe('RunDetailPage target cluster badge', () => {
   test.each([undefined, '', '   '])(
     'is hidden for a missing or blank value (%j)',
     (targetCluster) => {
-      mockHook(makeView({ targetCluster, targetNamespaces: ['app-a'] }));
+      mockHook(makeView({ targetCluster }));
       renderWithProviders(<RunDetailPage />);
 
       expect(screen.queryByTestId('target-cluster-badge')).not.toBeInTheDocument();
       expect(screen.getByText('Tech preview')).toBeInTheDocument();
-      expect(screen.getByText('app-a')).toBeInTheDocument();
     },
   );
 
