@@ -79,6 +79,29 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe('RunListPage columns', () => {
+  test.each([undefined, 'remote-cluster'])(
+    'renders the supported columns (%s)',
+    (targetCluster) => {
+      renderRuns([makeRun('first', targetCluster)]);
+
+      const expectedColumns = [
+        'Name',
+        ...(targetCluster ? ['Target cluster'] : []),
+        'Trigger domain',
+        'Status',
+        'Tokens (in / out)',
+        'Created',
+        '',
+      ];
+      expect(screen.getAllByRole('columnheader').map((header) => header.textContent)).toEqual(
+        expectedColumns,
+      );
+      expect(screen.getAllByRole('cell')).toHaveLength(expectedColumns.length);
+    },
+  );
+});
+
 describe('RunListPage target cluster column', () => {
   test('is hidden when no run has the field', () => {
     renderRuns([makeRun('first'), makeRun('second')]);
