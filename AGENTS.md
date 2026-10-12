@@ -209,7 +209,7 @@ See [Console Plugin SDK README](https://github.com/openshift/console/tree/master
 ## Git and PR Workflow
 
 ### Commit Messages
-- Start with the Jira ticket reference: `OLS-XXXX description`
+- Start with the Jira ticket reference: `OLS-XXXX: description`
 - Keep the first line under 72 characters
 - Use imperative mood
 
@@ -222,5 +222,5 @@ This repo uses a **fork-based workflow**:
    git push <your-fork-remote> <branch>
    gh pr create --repo openshift/lightspeed-agentic-console --head <your-github-user>:<branch> --base main
    ```
-3. **PR title** must start with the Jira reference: `OLS-XXXX description`
+3. **PR title** must start with the Jira reference: `OLS-XXXX: description`
 4. **Squash commits** before pushing
