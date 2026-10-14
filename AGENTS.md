@@ -223,4 +223,5 @@ This repo uses a **fork-based workflow**:
    gh pr create --repo openshift/lightspeed-agentic-console --head <your-github-user>:<branch> --base main
    ```
 3. **PR title** must start with the Jira reference: `OLS-XXXX: description`
-4. **Squash commits** before pushing
+4. **Squash into logical commits** before pushing — fold in fixups, etc. but keep changes that stand
+   on their own as logically separate commits
