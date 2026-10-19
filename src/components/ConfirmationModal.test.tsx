@@ -49,7 +49,7 @@ describe('ConfirmationModal', () => {
 
   test('disables both buttons while loading', () => {
     renderModal({ isLoading: true });
-    // isLoading injects a spinner that changes the button's accessible name,
+    // `isLoading` injects a spinner that changes the button's accessible name,
     // so match on the visible label text and walk up to the button element.
     expect(screen.getByText('Delete').closest('button')).toBeDisabled();
     expect(screen.getByText('Cancel').closest('button')).toBeDisabled();

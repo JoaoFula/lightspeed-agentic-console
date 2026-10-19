@@ -48,7 +48,7 @@ export const useExecutionLogActions = (
                 }
               }
             } catch {
-              /* skip non-JSON lines */
+              // Skip non-JSON lines
             }
           }
           if (lastActions) {

@@ -23,6 +23,7 @@ export default tseslint.config(
       ...react.configs.recommended.rules,
       ...react.configs['jsx-runtime'].rules,
       'arrow-body-style': 'error',
+      'capitalized-comments': ['error', 'always', { ignoreConsecutiveComments: true }],
       'func-style': ['error', 'expression'],
       'no-unused-vars': 'off',
       'prefer-arrow-callback': 'error',

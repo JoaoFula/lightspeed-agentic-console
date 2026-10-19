@@ -360,7 +360,7 @@ export const buildExecutionRecord = (
     selectedOption,
   };
 
-  // approvedAt only renders nested inside the approverUsername row, so it can't
+  // `approvedAt` only renders nested inside the `approverUsername` row, so it can't
   // stand on its own — guard on the fields that render independently.
   const hasRenderableField =
     record.approverUsername !== undefined || record.selectedOption !== undefined;
