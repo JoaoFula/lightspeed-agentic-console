@@ -66,7 +66,7 @@ describe('formatTokenCell', () => {
 
   it('renders inputTokens and outputTokens with locale formatting', () => {
     const result = formatTokenCell(makeRun('a', { inputTokens: 12345, outputTokens: 6789 }));
-    // toLocaleString() in Node produces locale-dependent output; check structural pattern
+    // `toLocaleString()` in Node produces locale-dependent output; check structural pattern
     expect(result).toContain('/');
     expect(result).toContain('12');
     expect(result).toContain('6');
@@ -91,11 +91,11 @@ describe('formatTokenCell', () => {
 // ---------------------------------------------------------------------------
 
 describe('compareTokenUsage', () => {
-  const withTokens = makeRun('with-100', { inputTokens: 80, outputTokens: 20 }); // total 100
-  const withZero = makeRun('with-0', { inputTokens: 0, outputTokens: 0 }); // total 0
-  const withLarge = makeRun('with-500', { inputTokens: 300, outputTokens: 200 }); // total 500
-  const missing1 = makeRun('missing-1'); // no status at all
-  const missing2 = makeRun('missing-2'); // no status at all
+  const withTokens = makeRun('with-100', { inputTokens: 80, outputTokens: 20 }); // Total 100
+  const withZero = makeRun('with-0', { inputTokens: 0, outputTokens: 0 }); // Total 0
+  const withLarge = makeRun('with-500', { inputTokens: 300, outputTokens: 200 }); // Total 500
+  const missing1 = makeRun('missing-1'); // No status at all
+  const missing2 = makeRun('missing-2'); // No status at all
 
   it('sorts ascending: 0 < 100 < 500', () => {
     const sorted = compareTokenUsage([withLarge, withTokens, withZero], 'asc');
@@ -141,7 +141,7 @@ describe('compareTokenUsage', () => {
 
   it('zero usage is NOT at the end - only truly missing values go there', () => {
     const sorted = compareTokenUsage([missing1, withZero, withTokens], 'asc');
-    // withZero (0) sorts BEFORE withTokens (100) - not pushed to end like missing
+    // `withZero` (0) sorts BEFORE `withTokens` (100) - not pushed to end like missing
     expect(sorted[0].metadata.name).toBe('with-0');
     expect(sorted[2].metadata.name).toBe('missing-1');
   });
