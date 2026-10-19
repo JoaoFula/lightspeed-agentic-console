@@ -5,6 +5,9 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
+    // Limit the number of workers to avoid OOM errors in CI
+    // Testing on 2026-10-19, limiting to 8 workers didn't slow down the test execution
+    maxWorkers: 4,
     setupFiles: ['./src/test-setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
   },
