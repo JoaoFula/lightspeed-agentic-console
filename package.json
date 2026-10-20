@@ -78,8 +78,7 @@
   "overrides": {
     "brace-expansion": "1.1.21",
     "browserslist": "4.29.3",
-    "js-yaml": "4.3.2",
-    "qs": "6.16.0"
+    "js-yaml": "4.3.2"
   },
   "consolePlugin": {
     "name": "lightspeed-agentic-console-plugin",
