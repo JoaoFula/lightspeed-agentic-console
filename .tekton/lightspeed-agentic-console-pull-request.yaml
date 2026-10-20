@@ -8,7 +8,7 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ("Dockerfile".pathChanged() || "src/**".pathChanged() || "locales/**".pathChanged() || "package.json".pathChanged() || "package-lock.json".pathChanged() || "console-extensions.json".pathChanged() || "tsconfig.json".pathChanged() || "tsconfig.build.json".pathChanged() || "webpack.config.ts".pathChanged() || "LICENSE".pathChanged() || ".prettierrc.yml".pathChanged() || ".stylelintrc.yaml".pathChanged() || "eslint.config.mjs".pathChanged() || "i18n-scripts/**".pathChanged() || "i18next-parser.config.js".pathChanged() || "vitest.config.ts".pathChanged() || ".tekton/**".pathChanged())
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main" && ("Dockerfile".pathChanged() || "src/**".pathChanged() || "locales/**".pathChanged() || "package.json".pathChanged() || "package-lock.json".pathChanged() || "console-extensions.json".pathChanged() || "tsconfig.json".pathChanged() || "tsconfig.build.json".pathChanged() || "webpack.config.ts".pathChanged() || "LICENSE".pathChanged() || ".prettierrc.yml".pathChanged() || ".stylelintrc.yaml".pathChanged() || "eslint.config.mjs".pathChanged() || "i18n-scripts/**".pathChanged() || "i18next-parser.config.js".pathChanged() || "vitest.config.mts".pathChanged() || ".tekton/**".pathChanged())
   labels:
     appstudio.openshift.io/application: ols
     appstudio.openshift.io/component: lightspeed-agentic-console
