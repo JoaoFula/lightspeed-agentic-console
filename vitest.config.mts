@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import * as path from 'path';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   test: {
@@ -14,9 +14,8 @@ export default defineConfig({
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
-      '@openshift-console/dynamic-plugin-sdk': path.resolve(
-        __dirname,
-        'src/__mocks__/dynamic-plugin-sdk.ts',
+      '@openshift-console/dynamic-plugin-sdk': fileURLToPath(
+        new URL('./src/__mocks__/dynamic-plugin-sdk.ts', import.meta.url),
       ),
     },
   },

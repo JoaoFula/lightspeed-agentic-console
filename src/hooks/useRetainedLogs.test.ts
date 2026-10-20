@@ -26,7 +26,7 @@ const makeRecord = (id: number, event: string, msg: string) => ({
 });
 
 // Each describe block re-imports the module to get a fresh module-level cache
-// (cachedAvailability/fetchInFlight). The SDK alias in vitest.config.ts creates
+// (cachedAvailability/fetchInFlight). The SDK alias in vitest.config.mts creates
 // a fresh consoleFetch vi.fn() per import, so we acquire it from the re-imported
 // SDK mock alongside the module under test.
 const freshImport = async () => {
