@@ -15,7 +15,7 @@
 
 ### AgenticRun Watching
 
-[PLANNED: OLS-3298] The watched AgenticRun type includes optional `spec.cancelled`. The detail view derives cancellation presentation from the failing condition's `reason: CancelledByUser` and retains sandbox status references while cleanup is pending.
+[PLANNED: OLS-3298, OLS-4131] The watched AgenticRun type includes optional `spec.cancelled` and the run-level `Stopping` condition in `status.conditions`. The detail view shows `Stopping` while that condition is `True`, derives the final cancellation presentation from the failing condition's `reason: CancelledByUser` once the outcome is recorded, and retains sandbox status references while cleanup is pending. The `Stopping` condition is consumed at the presentation layer only; `derivePhaseFromConditions` does not use it.
 
 ```
 useK8sWatchResource(LightspeedAgenticRunGVK, {name, namespace})
