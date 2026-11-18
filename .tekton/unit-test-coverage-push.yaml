@@ -110,7 +110,11 @@ spec:
                 cd /workspace/source
                 # The image bundles npm 10, but the repository lockfile
                 # requires npm >= 11.10: bootstrap the pinned npm without root.
-                npx -y 'npm@^11' ci
+                # Pin npm (not latest) to match the repo's min-release-age=14
+                # policy used for npm dependencies.
+                # Do NOT use --omit=optional: vitest (rolldown) needs the
+                # optional platform-specific binding packages at runtime.
+                npx -y npm@11.21.1 ci --no-fund
                 npm run test-coverage
             - name: upload-coverage
               env:

@@ -108,7 +108,7 @@ fi
 if command -v codecovcli > /dev/null 2>&1; then
     cli=(codecovcli)
 else
-    cli=(uv tool run --from "codecov-cli==${CODECOV_CLI_VERSION}" codecovcli)
+    cli=(uv tool run --exclude-newer '14 days' --from "codecov-cli==${CODECOV_CLI_VERSION}" codecovcli)
     log "codecovcli not found on PATH, using uv (codecov-cli==${CODECOV_CLI_VERSION})"
 fi
 
